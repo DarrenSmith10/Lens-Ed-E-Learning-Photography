@@ -1,93 +1,78 @@
-import React, { useState } from 'react';
-import api from '../api';
-import { useNavigate } from 'react-router-dom';
-import { useSession } from '../contexts/SessionContext';
+import React, { useState } from "react";
+import axios from "../api";
+import "../Login.css";
 
 const Signup = () => {
-  const [email, setEmail] = useState('');
-  const [userName, setUserName] = useState('');
-  const [password, setPassword] = useState('');
-  const [password2, setPassword2] = useState('');
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
 
-  const { setUser } = useSession();
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
 
-  const displayError = (message) => {
-    setError(message);
-    setTimeout(() => {
-        setError('');
-    }, 3000);
-};
-
-  const validatePassword = () => {
-    if (password !== password2) {
-        displayError('Passwords do not match');
-        return false;
-    }
-    return true;
-    };
-
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // run any validation checks
-    if (!validatePassword()) {
-        return;
-    }
-
     try {
-        
-  
-      const response = await api.post('/api/users', { name: userName, email: email, password: password, password2: password2 });
-      const data = response.data;
-      // Update the user in the context
-      setUser({
-        username: data.user.username,
-        id: data.user.id,
-      });
+      const response = await axios.post("/api/users", formData);
 
-      navigate('/');
-    } catch (error) {
-      console.error('Signup failed', error);
+      const user = response?.data?.user;
+      if (user) {
+        localStorage.setItem("authToken", response.data.token);
+        localStorage.setItem("username", user.name || "Guest");
+        setSuccess(true);
+        setError(null);
+      } else {
+        throw new Error("Signup response did not include user.");
+      }
+    } catch (err) {
+      console.error("Signup error:", err.message);
+      setError("Signup failed. Please try again.");
+      setSuccess(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Signup_CoursePage</h2>
-      <input
-        type="text"
-        placeholder="Username"
-        value={userName}
-        onChange={(e) => setUserName(e.target.value)}
-        required
-      />
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
-      <input
-        type="password"
-        placeholder="Confirm Password"
-        value={password2}
-        onChange={(e) => setPassword2(e.target.value)}
-        required
-      />
-      {error && <p>{error}</p>}
-      <button type="submit">Signup</button>
-    </form>
+    <div className="login-container">
+      <h2>Sign Up</h2>
+      <form onSubmit={handleSubmit} className="login-form">
+        <input
+          type="text"
+          name="name"
+          placeholder="Full Name"
+          value={formData.name}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="email"
+          name="email"
+          placeholder="Email Address"
+          value={formData.email}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="password"
+          name="password"
+          placeholder="Create Password"
+          value={formData.password}
+          onChange={handleChange}
+          required
+        />
+        <button type="submit">Register</button>
+        {error && <p className="error-msg">{error}</p>}
+        {success && <p className="success-msg">Signup successful!</p>}
+      </form>
+    </div>
   );
 };
 
