@@ -8,7 +8,12 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: "https://lens-ed-client.onrender.com", // frontend origin
+  credentials: true
+}));
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -23,4 +28,10 @@ sequelize.sync().then(() => {
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 Server running on port ${PORT}`);
   });
+});
+
+//Check if server is alive
+// This is a simple endpoint to check if the server is alive
+app.get("/", (req, res) => {
+  res.send("Lens-Ed Backend is alive 🎯");
 });
