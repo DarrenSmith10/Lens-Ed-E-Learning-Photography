@@ -17,6 +17,10 @@ app.use(cors());
 
 const PORT = process.env.PORT || 3001;
 
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server listening on port ${PORT}`);
+});
+
 // has the --rebuild parameter been passed as a command line param?
 const rebuild = process.argv[2] === "--rebuild";
 
