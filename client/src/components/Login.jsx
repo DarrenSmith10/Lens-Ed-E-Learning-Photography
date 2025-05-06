@@ -49,7 +49,7 @@ const Login = () => {
     try {
       const response = await api.post('/api/users/login', { email, password });
       const data = response.data;
-      setUser({ username: data.user.username, id: data.user.id });
+      setUser({ username: data.user.name, id: data.user.id });
       localStorage.setItem('authToken', data.token);
       navigate('/');
     } catch (error) {
