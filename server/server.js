@@ -1,45 +1,26 @@
 const express = require("express");
-const bodyParser = require("body-parser");
-const path = require("path");
 const cors = require("cors");
-
-const sequelize = require("./config/connection");
+const path = require("path");
 const routes = require("./routes");
+const sequelize = require("./config/connection");
 
-
-// Initialize Express application
 const app = express();
-app.use(bodyParser.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Enable CORS for any paths from the client
-app.use(cors());
-
 const PORT = process.env.PORT || 3001;
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server listening on port ${PORT}`);
-});
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// has the --rebuild parameter been passed as a command line param?
-const rebuild = process.argv[2] === "--rebuild";
+// Serve uploaded images
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, "../client/public")));
-
-
-// Handle GET request at the root route
-app.get("/", (req, res) => {
-  // res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-// Add routes
+// API Routes
 app.use(routes);
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // ✅ good
-
-
-// Sync database
-sequelize.sync({ force: rebuild }).then(() => {
-  app.listen(PORT);
+// Sync DB and start server
+sequelize.sync().then(() => {
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
 });
