@@ -1,68 +1,146 @@
 import React, { useState } from "react";
-import axios from "../api";
-import "../components/Login.css";
+import api from "../api";
+import { useNavigate } from "react-router-dom";
+import { useSession } from "../contexts/SessionContext";
+import "./Login.css";
 
 const Login = () => {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState('');
+  const [userName, setUserName] = useState('');
+  const [password, setPassword] = useState('');
+  const [password2, setPassword2] = useState('');
+  const [error, setError] = useState('');
+  const { setUser } = useSession();
+  const navigate = useNavigate();
 
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  const displayError = (message) => {
+    setError(message);
+    setTimeout(() => {
+      setError('');
+    }, 3000);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post("/api/users/login", formData);
+  const validatePassword = () => {
+    if (password !== password2) {
+      displayError('Passwords do not match');
+      return false;
+    }
+    return true;
+  };
 
-      const user = response?.data?.user;
-      if (user) {
-        localStorage.setItem("authToken", response.data.token);
-        localStorage.setItem("username", user.name || "Guest");
-        setSuccess(true);
-        setError(null);
-      } else {
-        throw new Error("Login response did not include user.");
-      }
-    } catch (err) {
-      console.error("Login error:", err.message);
-      setError("Login failed. Please try again.");
-      setSuccess(false);
+  const handleSignUp = async (e) => {
+    e.preventDefault();
+    if (!validatePassword()) return;
+
+    try {
+      const response = await api.post('/api/users', { name: userName, email, password });
+      const data = response.data;
+      setUser({ username: data.user.username || data.user.name, id: data.user.id });
+      navigate('/');
+    } catch (error) {
+      displayError('Signup failed. Please try again.');
+      console.error('Signup error:', error);
     }
   };
 
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await api.post('/api/users/login', { email, password });
+      const data = response.data;
+      setUser({ username: data.user.username || data.user.name, id: data.user.id });
+      localStorage.setItem('authToken', data.token);
+      navigate('/');
+    } catch (error) {
+      displayError('Login failed. Please check your credentials.');
+      console.error('Login error:', error);
+    }
+  };
+
+  const toggleForm = () => setIsSignUp((prev) => !prev);
+
   return (
-    <div className="login-container">
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit} className="login-form">
-        <input
-          type="email"
-          name="email"
-          placeholder="Email Address"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Enter Password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
-        <button type="submit">Login</button>
-        {error && <p className="error-msg">{error}</p>}
-        {success && <p className="success-msg">Login successful!</p>}
-      </form>
+    <div className={`auth-container ${isSignUp ? "sign-up-mode" : ""}`}>
+      {/* Sign In Form */}
+      <div className="form-container sign-in-container">
+        <form onSubmit={handleLogin}>
+          <h1>Sign In</h1>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          {error && <p>{error}</p>}
+          <button type="submit">Sign In</button>
+        </form>
+      </div>
+
+      {/* Sign Up Form */}
+      <div className="form-container sign-up-container">
+        <form onSubmit={handleSignUp}>
+          <h1>Sign Up</h1>
+          <input
+            type="text"
+            placeholder="Username"
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
+            required
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            value={password2}
+            onChange={(e) => setPassword2(e.target.value)}
+            required
+          />
+          {error && <p>{error}</p>}
+          <button type="submit">Sign Up</button>
+        </form>
+      </div>
+
+      {/* Overlay Section */}
+      <div className="overlay-container">
+        <div className="overlay">
+          <div className="overlay-panel overlay-left">
+            <h1>Welcome Back!</h1>
+            <p>Already have an account? Sign in here.</p>
+            <button className="ghost" onClick={toggleForm}>
+              Sign In
+            </button>
+          </div>
+          <div className="overlay-panel overlay-right">
+            <h1>Hello, Friend!</h1>
+            <p>Don’t have an account? Sign up here.</p>
+            <button className="ghost" onClick={toggleForm}>
+              Sign Up
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
