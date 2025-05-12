@@ -1,32 +1,23 @@
 services:
   - type: web
-    name: lens-ed-backend
+    name: lens-ed-fullstack
     env: node
     plan: free
+    rootDir: server
     buildCommand: npm install && cd ../client && npm install && npm run build && cp -r ../client/dist/* ./public/
     startCommand: node server.js
-    rootDir: server
     envVars:
       - key: DB_HOST
-        value: your-db-host.clever-cloud.com
+        value: bhfzwen55qtewehcbzlp-mysql.services.clever-cloud.com
       - key: DB_PORT
         value: 3306
-      - key: DB_USERNAME
-        value: your-db-username
-      - key: DB_PASSWORD
-        value: your-db-password
       - key: DB_NAME
-        value: your-db-name
+        value: bhfzwen55qtewehcbzlp
+      - key: DB_USERNAME
+        value: ucpq0la133apiyu5
+      - key: DB_PASSWORD
+        value: 94ladOWF4aWB1ekXvFJH
       - key: DB_DIALECT
         value: mysql
       - key: JWT_SECRET
-        value: your_jwt_secret
-
-  - type: static
-    name: lens-ed-frontend
-    rootDir: client
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    envVars:
-      - key: VITE_API_BASE_URL
-        value: https://lens-ed-backend.onrender.com
+        value: your_super_secret_jwt_key_here
