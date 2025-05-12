@@ -6,11 +6,23 @@ require("dotenv").config();
 
 const routes = require("./routes");
 
-// Full CORS configuration with preflight handling
+// 🔐 Smart dynamic CORS config
+const allowedOrigins = [
+  "https://lens-ed-e-learning-photography.onrender.com",
+  "https://lens-ed-fullstack.onrender.com"
+];
+
 const corsOptions = {
-  origin: "https://lens-ed-e-learning-photography.onrender.com",
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS: " + origin));
+    }
+  },
   credentials: true,
 };
+
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions)); // Preflight handling
 
