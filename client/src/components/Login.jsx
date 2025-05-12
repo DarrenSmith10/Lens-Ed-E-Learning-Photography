@@ -34,27 +34,51 @@ const Login = () => {
     if (!validatePassword()) return;
 
     try {
-      const response = await api.post('/api/users', { name: userName, email, password });
+      const response = await api.post('/api/users', {
+        name: userName,
+        email,
+        password,
+      });
       const data = response.data;
-      setUser({ username: data.user.username || data.user.name, id: data.user.id });
-      navigate('/');
+
+      if (data.user) {
+        setUser({
+          username: data.user.username || data.user.name,
+          id: data.user.id,
+        });
+        localStorage.setItem("authToken", data.token);
+        navigate('/');
+      } else {
+        displayError("Signup failed: No user returned");
+      }
     } catch (error) {
-      displayError('Signup failed. Please try again.');
-      console.error('Signup error:', error);
+      console.error("Signup error:", error);
+      displayError("Signup failed. Please try again.");
     }
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await api.post('/api/users/login', { email, password });
+      const response = await api.post('/api/users/login', {
+        email,
+        password,
+      });
       const data = response.data;
-      setUser({ username: data.user.username || data.user.name, id: data.user.id });
-      localStorage.setItem('authToken', data.token);
-      navigate('/');
+
+      if (data.user) {
+        setUser({
+          username: data.user.username || data.user.name,
+          id: data.user.id,
+        });
+        localStorage.setItem("authToken", data.token);
+        navigate('/');
+      } else {
+        displayError("Login failed: No user returned");
+      }
     } catch (error) {
-      displayError('Login failed. Please check your credentials.');
-      console.error('Login error:', error);
+      console.error("Login error:", error);
+      displayError("Login failed. Please check your credentials.");
     }
   };
 
