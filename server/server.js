@@ -4,7 +4,7 @@ const cors = require("cors");
 const app = express();
 require("dotenv").config();
 
-
+const routes = require("./routes"); // Adjust as needed to your actual router file
 
 app.use(cors({
   origin: "https://lens-ed-e-learning-photography.onrender.com",
@@ -26,8 +26,6 @@ app.use("/api", routes);
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
-
-const routes = require("./routes"); // Adjust as needed to your actual router file
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
