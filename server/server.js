@@ -4,12 +4,16 @@ const cors = require("cors");
 const app = express();
 require("dotenv").config();
 
-const routes = require("./routes"); // Adjust as needed to your actual router file
+const routes = require("./routes");
 
-app.use(cors({
+// Full CORS configuration with preflight handling
+const corsOptions = {
   origin: "https://lens-ed-e-learning-photography.onrender.com",
   credentials: true,
-}));
+};
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // Preflight handling
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
