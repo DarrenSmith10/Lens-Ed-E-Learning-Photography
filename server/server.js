@@ -24,7 +24,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Backend API routes
-app.use("/api", routes);
+app.use("/", routes);
 
 // Catch-all to support React Router
 app.get("*", (req, res) => {
