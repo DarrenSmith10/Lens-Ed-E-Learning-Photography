@@ -1,37 +1,30 @@
 const express = require("express");
-const cors = require("cors");
 const path = require("path");
-const routes = require("./routes");
-const sequelize = require("./config/connection");
-
+const cors = require("cors");
 const app = express();
-const PORT = process.env.PORT || 3001;
+require("dotenv").config();
 
-// Middleware
-app.use(cors({
-  origin: "https://lens-ed-client.onrender.com", // frontend origin
-  credentials: true
-}));
+const routes = require("./routes"); // Adjust as needed to your actual router file
 
-
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve frontend static files from /public
+app.use(express.static(path.join(__dirname, "public")));
 
 // Serve uploaded images
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// API Routes
-app.use(routes);
+// Backend API routes
+app.use("/api", routes);
 
-// Sync DB and start server
-sequelize.sync().then(() => {
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-  });
+// Catch-all to support React Router
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-//Check if server is alive
-// This is a simple endpoint to check if the server is alive
-app.get("/", (req, res) => {
-  res.send("Lens-Ed Backend is alive 🎯");
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
